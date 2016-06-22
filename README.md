@@ -1,6 +1,10 @@
 # openstack-opendaylight
 
 
+Command History to install Opendaylight & OpenStack:
+-----------------------------------------------------
+
+
 mkdir Downloads
 cd ~/Downloads/
 wget http://ftp.wayne.edu/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
