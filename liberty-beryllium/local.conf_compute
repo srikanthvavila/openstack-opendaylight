@@ -17,6 +17,8 @@ ODL_MODE=compute
 
 disable_all_services
 enable_service n-cpu
+enable_service n-novnvc
+enable_service n-cauth
 enable_service odl-compute
 
 ## Neutron options
