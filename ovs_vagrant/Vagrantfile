@@ -1,0 +1,39 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  num_compute_nodes = (ENV['DEVSTACK_NUM_COMPUTE_NODES'] || 1).to_i
+
+  control_ip = "192.168.51.20"
+  compute_ip_base = "192.168.51."
+  neutron_ex_ip = "192.168.111.10"
+  compute_ex_ip_base = "192.168.111."
+  compute_ips = num_compute_nodes.times.collect { |n| compute_ip_base + "#{n+21}" }
+  compute_ex_ips = num_compute_nodes.times.collect { |n| compute_ex_ip_base + "#{n+11}" }
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://atlas.hashicorp.com/search.
+  # Devstack Controller
+  config.vm.define "ovs-all-in-one", primary: true do |allinone|
+    allinone.vm.box = "ubuntu/trusty64"
+    allinone.vm.hostname = "ovs-all-in-one"
+    allinone.vm.network "private_network", ip: "#{control_ip}"
+    allinone.vm.provider :virtualbox do |vb|
+      vb.cpus = 4
+      vb.customize ["modifyvm", :id, "--memory", "8192"]
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype3", "virtio"]
+      vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
+      vb.customize ["modifyvm", :id, "--nicpromisc3", "allow-all"]
+    end
+  end
+
+end

@@ -1,0 +1,44 @@
+# A single node devstack configuration for use with XOS
+[[local|localrc]]
+
+HOST_IP=192.168.50.21
+HOST_NAME=devstack-compute-1
+SERVICE_HOST_NAME=devstack-control
+SERVICE_HOST=192.168.50.20
+Q_HOST=$SERVICE_HOST
+MYSQL_HOST=$SERVICE_HOST
+RABBIT_HOST=$SERVICE_HOST
+GLANCE_HOSTPORT=$SERVICE_HOST:9292
+KEYSTONE_AUTH_HOST=$SERVICE_HOST
+KEYSTONE_SERVICE_HOST=$SERVICE_HOST
+
+enable_plugin networking-odl http://git.openstack.org/openstack/networking-odl stable/mitaka
+ODL_MODE=compute
+
+disable_all_services
+enable_service n-cpu
+enable_service n-novnvc
+enable_service n-cauth
+enable_service odl-compute
+
+## Neutron options
+#Q_USE_SECGROUP=False
+
+ADMIN_PASSWORD=d1am0nd
+MYSQL_PASSWORD=$ADMIN_PASSWORD
+RABBIT_PASSWORD=$ADMIN_PASSWORD
+QPID_PASSWORD=$ADMIN_PASSWORD
+SERVICE_TOKEN=$ADMIN_PASSWORD
+SERVICE_PASSWORD=$ADMIN_PASSWORD
+
+ODL_MGR_IP=192.168.50.20
+ODL_PORT=8080
+Q_L3_ENABLED=True
+#ODL_L3=True
+#PUBLIC_INTERFACE=eth1:0
+#ODL_PROVIDER_MAPPINGS=br-ex:eth1:0
+
+NEUTRON_CREATE_INITIAL_NETWORKS=False
+Q_PLUGIN=ml2
+Q_ML2_PLUGIN_MECHANISM_DRIVERS=opendaylight,logger
+
