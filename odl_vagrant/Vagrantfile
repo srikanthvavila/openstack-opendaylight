@@ -35,6 +35,10 @@ Vagrant.configure("2") do |config|
       vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
       vb.customize ["modifyvm", :id, "--nicpromisc3", "allow-all"]
     end
+    control.vm.provider :libvirt do |v|
+      v.memory = 8192
+      v.cpus = 4
+    end
   end
 
   num_compute_nodes.times do |n|
@@ -54,6 +58,11 @@ Vagrant.configure("2") do |config|
         vb.customize ["modifyvm", :id, "--nictype3", "virtio"]
         vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
         vb.customize ["modifyvm", :id, "--nicpromisc3", "allow-all"]
+      end
+      compute.vm.provider :libvirt do |v|
+        v.memory = 8192
+        v.cpus = 4
+        v.netsted = true
       end
     end
   end
