@@ -1,0 +1,42 @@
+---
+- hosts: all
+
+  tasks:
+
+    - name: Update repositories and install the packages
+      become: yes
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+      with_items:
+        - git
+        - vim
+        - screen
+        - curl
+
+    - name: Install python-software-properties
+      become: yes
+      apt: name=python-software-properties state=latest
+
+    - name: Install add-apt-repostory
+      become: yes
+      apt: name=software-properties-common state=latest
+
+    - name: Add mitaka-staging Repository
+      become: yes
+      apt_repository: repo='ppa:ubuntu-cloud-archive/mitaka-staging'
+
+    - name: Install openvswitch
+      become: yes
+      apt:
+        name: "{{item}}"
+        state: latest
+      with_items:
+      - openvswitch-switch
+
+    - name: Clone devstack repo
+      git: repo=https://git.openstack.org/openstack-dev/devstack dest=~/devstack version=stable/mitaka
+
+    - name: Download local.conf
+      get_url: url=https://raw.githubusercontent.com/srikanthvavila/openstack-opendaylight/master/odl_vagrant/local.conf_compute dest=~/devstack/local.conf
+

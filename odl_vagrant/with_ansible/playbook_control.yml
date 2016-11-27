@@ -1,0 +1,121 @@
+---
+- hosts: all
+
+  tasks:
+
+    - name: Update repositories and install the packages
+      become: yes
+      apt:
+        name: "{{ item }}"
+        update_cache: yes
+      with_items:
+        - pkg-config
+        - gcc
+        - make
+        - ant
+        - g++
+        - git
+        - libboost-dev
+        - libcurl4-openssl-dev
+        - libjson0-dev
+        - libssl-dev
+        - unixodbc-dev
+        - xmlstarlet
+        - vim
+        - screen
+        - curl
+
+    - name: Download Apache Maven 
+      get_url: url=https://archive.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz dest=/tmp/apache-maven-3.3.9-bin.tar.gz
+
+    - name: Create /usr/local/apache-maven directory
+      become: yes
+      file: path=/usr/local/apache-maven state=directory
+
+    - name: Untar Maven 
+      become: yes
+      unarchive: src=/tmp/apache-maven-3.3.9-bin.tar.gz dest=/usr/local/apache-maven/ copy=no
+
+    - name: Correct maven version is chosen
+      become: yes
+      alternatives: name=mvn link=/usr/bin/mvn path=/usr/local/apache-maven/apache-maven-3.3.9/bin/mvn
+
+    - name: Create ~/.m2 directory
+      file: path=~/.m2 state=directory
+
+    - name: Download Maven custom settings
+      get_url: url=https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml dest=~/.m2/settings.xml
+
+    - name: Install add-apt-repostory
+      become: yes
+      apt: name=software-properties-common state=latest
+
+    - name: Add Oracle Java Repository
+      become: yes
+      apt_repository: repo='ppa:webupd8team/java'
+
+    - name: Accept Java 8 license
+      become: yes
+      debconf: name='oracle-java8-installer' question='shared/accepted-oracle-license-v1-1' value='true' vtype='select'
+    
+    - name: Install Oracle Java 8
+      become: yes
+      apt:
+        name: "{{item}}"
+        state: latest
+      with_items:
+      - oracle-java8-installer
+      - ca-certificates
+      - oracle-java8-set-default
+
+    - name: update bashrc
+      lineinfile: dest=~/.bashrc line="export {{ item.name }}=\"{{ item.value }}\""
+      with_items:
+        - { name: 'M2_HOME', value: '/usr/local/apache-maven/apache-maven-3.3.9' }
+        - { name: 'MAVEN_OPTS', value: '-Xms256m -Xmx2048m' }
+        - { name: 'M2', value: '$M2_HOME/bin' }
+        - { name: 'PATH', value: '$M2:$PATH' }
+        - { name: 'JAVA_HOME', value: '/usr/lib/jvm/java-8-oracle' }
+
+    - name: source bashrc
+      shell: source ~/.bashrc
+      args:
+        executable: /bin/bash
+
+    - name: Create ~/opendaylight/netvirt directory
+      file: path=~/opendaylight/netvirt state=directory
+
+    - name: Clone netvirt repo
+      git: repo=https://git.opendaylight.org/gerrit/netvirt.git dest=~/opendaylight/netvirt
+
+    - name: mvn clean install
+      shell: mvn -U clean install -DskipTests
+      args:
+        chdir: ~/opendaylight/netvirt
+
+    - name: Install python-software-properties
+      become: yes
+      apt: name=python-software-properties state=latest
+
+    - name: Install add-apt-repostory
+      become: yes
+      apt: name=software-properties-common state=latest
+
+    - name: Add mitaka-staging Repository
+      become: yes
+      apt_repository: repo='ppa:ubuntu-cloud-archive/mitaka-staging'
+
+    - name: Install openvswitch
+      become: yes
+      apt:
+        name: "{{item}}"
+        state: latest
+      with_items:
+      - openvswitch-switch
+
+    - name: Clone devstack repo
+      git: repo=https://git.openstack.org/openstack-dev/devstack dest=~/devstack version=stable/mitaka
+
+    - name: Download local.conf
+      get_url: url=https://raw.githubusercontent.com/srikanthvavila/openstack-opendaylight/master/odl_vagrant/local.conf_control dest=~/devstack
+
