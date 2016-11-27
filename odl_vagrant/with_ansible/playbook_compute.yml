@@ -40,3 +40,6 @@
     - name: Download local.conf
       get_url: url=https://raw.githubusercontent.com/srikanthvavila/openstack-opendaylight/master/odl_vagrant/local.conf_compute dest=~/devstack/local.conf
 
+    - name: stack it
+      command: chdir=~/devstack ./stack.sh
+      ignore_errors: yes
